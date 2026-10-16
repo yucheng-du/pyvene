@@ -1,0 +1,70 @@
+{
+  "archives": {
+    "autoencoder_latent": {
+      "description": "AutoencoderIntervention with latent_dim=4 at block_output of layer 0, latent interchange indices [0, 2], after one SGD step."
+    },
+    "constant_source": {
+      "description": "VanillaIntervention with a constant source_representation tensor at block_output of layer 0 (hidden_source_representation flag + tensor in intkey binary)."
+    },
+    "linked_pair": {
+      "description": "Two representations (layer 1 first, then layer 0) sharing one LowRankRotatedSpaceIntervention through intervention_link_key=0, after one SGD step."
+    },
+    "lowrank_two_layers": {
+      "description": "Two LowRankRotatedSpaceIntervention (rank 2) at block_output of layers 0 and 1, after one SGD step; latent_dim is None in every record."
+    }
+  },
+  "base_model": {
+    "class": "pyvene.models.mlp.modelings_mlp.MLPModel",
+    "config": {
+      "h_dim": 8,
+      "include_emb": false,
+      "n_layer": 2,
+      "pdrop": 0.0
+    },
+    "reinitialisation": "every parameter <- 0.5 * randn(seeded generator)"
+  },
+  "command": [
+    "python",
+    "/tmp/claude-0/-home-user-pyvene/d3d9d6ea-f344-54c6-a442-a06a92fa3381/scratchpad/evidence/scripts/generate_legacy_archives.py",
+    "--pyvene-root",
+    "/home/user/wt-base157",
+    "--expected-sha",
+    "9e333904dcf9e597ca76170010d17f4d4580de8d",
+    "--out",
+    "/tmp/claude-0/-home-user-pyvene/d3d9d6ea-f344-54c6-a442-a06a92fa3381/scratchpad/evidence/fixtures/legacy_native_archives"
+  ],
+  "created_utc": "2026-10-16T03:15:14.703227+00:00",
+  "derived_13field_fixture": {
+    "note": "Historical-layout control derived from the genuine base-produced 14-field archive; it is NOT an independently produced historical archive.",
+    "path": "lowrank_two_layers/config_13field_derived.json",
+    "source": "lowrank_two_layers/archive/config.json",
+    "transformation": "json.load(source); for each record in 'representations': assert len(record) == 14 and record[13] is None (latent_dim); delete record[13]; json.dumps(indent=2, sort_keys=True) + newline. No other key or value is changed."
+  },
+  "files_sha256": {
+    "autoencoder_latent/archive/config.json": "55041a8ccffa335f2b8ea250b781ddc418f4d368b93ee8d547bac0bd7434d8b4",
+    "autoencoder_latent/archive/intkey_layer_0_comp_block_output_unit_pos_nunit_1#0.bin": "a9d8add8395dde73e3d0924757d12ec348ae947bca22aa063431bf350682d601",
+    "autoencoder_latent/reference.pt": "777518cbcdf76c3310f1c1b2b7d4cf18055460f3d771301f99b3ea7a57b53a2c",
+    "constant_source/archive/config.json": "7b7353071a426a134d83a10fffe2e8a0bba2b63adb3a5eb51a24adf1e090550f",
+    "constant_source/archive/intkey_layer_0_comp_block_output_unit_pos_nunit_1#0.bin": "bc652903d9312472837a7a068644a0ee74d9474a44a7a409dfbc0ecb49d10113",
+    "constant_source/reference.pt": "28281b2e60eda22ff6e8b7703f8a81515fa96830efac0943c5887f85dfabb1d5",
+    "linked_pair/archive/config.json": "a9dd0e349d3c46486d160858377f36d6f3ecc33f935cdd990b0864e7809a5f6a",
+    "linked_pair/archive/intkey_layer_0_comp_block_output_unit_pos_nunit_1#0.bin": "346d7b8454057e2fcbc14647d40469fef8e13d43ae7c3b9b632c909af0577c60",
+    "linked_pair/archive/intkey_layer_1_comp_block_output_unit_pos_nunit_1#0.bin": "07b246936eaf041d99aa9a1622119cba43a16f4a0eeb4f42b3296c6a0bdb6c45",
+    "linked_pair/reference.pt": "0d0576c0e622456fc34ee2543a3d0e8625fa90291bd831401348060671640d05",
+    "lowrank_two_layers/archive/config.json": "bf13a971cfb395a9f48d0e9b336e19a755d371aeaf72635d670b87c13add2700",
+    "lowrank_two_layers/archive/intkey_layer_0_comp_block_output_unit_pos_nunit_1#0.bin": "9bdc68a5144a52d0ebd27891d7a1378c4a9a89fc5d2680e579c361f58502f6a5",
+    "lowrank_two_layers/archive/intkey_layer_1_comp_block_output_unit_pos_nunit_1#0.bin": "3cc6b12e68dd8954a50bab8bfdff574f810a75ad8ca9257365e3985ce88da290",
+    "lowrank_two_layers/config_13field_derived.json": "9ad30976c86f98458c696fff57478e0042832c2e5ffe6cf2283c43e634fd92fe",
+    "lowrank_two_layers/reference.pt": "592e231d41b29aef0fc0cca6571121b0f76e71caaaafebc5e32c86ddecff258f"
+  },
+  "generator": "generate_legacy_archives.py",
+  "generator_sha256": "580745fedc362514bfc2081b893499da5f77157cca3b27c3546f315e8c137f8e",
+  "numpy": "2.5.4",
+  "purpose": "Legacy native IntervenableModel archives produced by the unmodified base implementation (positional RepresentationConfig records).",
+  "python": "3.12.15",
+  "pyvene_commit": "9e333904dcf9e597ca76170010d17f4d4580de8d",
+  "pyvene_module": "pyvene/__init__.py",
+  "torch": "2.6.0",
+  "torch_num_threads": 2,
+  "transformers": "4.57.1"
+}

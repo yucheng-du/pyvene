@@ -1,0 +1,54 @@
+{
+  "intervention_constant_sources": [
+    false,
+    false
+  ],
+  "intervention_dimensions": [
+    8,
+    8
+  ],
+  "intervention_types": [
+    "<class 'pyvene.models.interventions.LowRankRotatedSpaceIntervention'>",
+    "<class 'pyvene.models.interventions.LowRankRotatedSpaceIntervention'>"
+  ],
+  "mode": "parallel",
+  "representations": [
+    [
+      1,
+      "block_output",
+      "pos",
+      1,
+      2,
+      null,
+      null,
+      null,
+      null,
+      0,
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      0,
+      "block_output",
+      "pos",
+      1,
+      2,
+      null,
+      null,
+      null,
+      null,
+      0,
+      null,
+      null,
+      null,
+      null
+    ]
+  ],
+  "sorted_keys": [
+    "layer_1_comp_block_output_unit_pos_nunit_1#0",
+    "layer_0_comp_block_output_unit_pos_nunit_1#0"
+  ],
+  "transformers_version": "4.57.1"
+}

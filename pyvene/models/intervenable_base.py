@@ -11,6 +11,8 @@ from .interventions import *
 from .configuration_intervenable_model import (
     IntervenableConfig,
     RepresentationConfig,
+    _intervention_constructor_kwargs,
+    representation_to_record,
 )
 from .interventions import (
     TrainableIntervention,
@@ -130,7 +132,12 @@ class BaseModel(nn.Module):
                     if type(intervention_type) != list
                     else intervention_type[i]
                 )
-                all_metadata = representation._asdict()
+                if isinstance(intervention_function, str):
+                    # a type restored from JSON ("<class 'module.Name'>")
+                    intervention_function = get_type_from_string(intervention_function)
+                # declared fields plus explicit intervention_kwargs only
+                all_metadata = _intervention_constructor_kwargs(
+                    representation, f"representations[{i}]")
                 component_dim = get_dimension_by_component(
                     get_internal_model_type(model), model.config, 
                     representation.component
@@ -1168,44 +1175,37 @@ class IntervenableModel(BaseModel):
 
             api = HfApi()
 
-        create_directory(save_directory)
-
-        saving_config = copy.deepcopy(self.config)
+        # Encode the whole configuration before writing any file, so that a
+        # value that cannot be stored fails here without a partial archive.
+        # A shallow copy suffices: its attributes are rebound, never mutated.
+        saving_config = copy.copy(self.config)
         saving_config.sorted_keys = self.sorted_keys
         saving_config.model_type = str(
             saving_config.model_type
         )
+        # named records; a constant source tensor is replaced by the hidden
+        # flag and stored in the intervention binary file below.
+        saving_config.representations = [
+            representation_to_record(reprs, f"representations[{i}]", model_archive=True)
+            for i, reprs in enumerate(self.config.representations)
+        ]
         saving_config.intervention_types = []
         saving_config.intervention_dimensions = []
         saving_config.intervention_constant_sources = []
-        
-        # handle constant source reprs if passed in.
-        serialized_representations = []
-        for reprs in saving_config.representations:
-            serialized_reprs = {}
-            for k, v in reprs._asdict().items():
-                if k == "hidden_source_representation":
-                    continue
-                if k == "source_representation":
-                    # hidden flag only set here
-                    if v is not None:
-                        serialized_reprs["hidden_source_representation"] = True
-                    serialized_reprs[k] = None
-                elif k == "intervention_type":
-                    serialized_reprs[k] = None
-                elif k == "intervention":
-                    serialized_reprs[k] = None
-                else:
-                    serialized_reprs[k] = v
-            serialized_representations += [
-                RepresentationConfig(**serialized_reprs)
-            ]
-        saving_config.representations = \
-            serialized_representations
-        
         for k, v in self.interventions.items():
             intervention = v
             saving_config.intervention_types += [str(type(intervention))]
+            if intervention.interchange_dim is None:
+                saving_config.intervention_dimensions += [None]
+            else:
+                saving_config.intervention_dimensions += [intervention.interchange_dim.tolist()]
+            saving_config.intervention_constant_sources += [intervention.is_source_constant]
+        saving_config.to_json_string()
+
+        create_directory(save_directory)
+
+        for k, v in self.interventions.items():
+            intervention = v
             binary_filename = f"intkey_{k}.bin"
             # save intervention binary file
             if isinstance(intervention, TrainableIntervention) or \
@@ -1230,11 +1230,6 @@ class IntervenableModel(BaseModel):
                         repo_id=hf_repo_name,
                         repo_type="model",
                     )
-            if intervention.interchange_dim is None:
-                saving_config.intervention_dimensions += [None]
-            else:
-                saving_config.intervention_dimensions += [intervention.interchange_dim.tolist()]
-            saving_config.intervention_constant_sources += [intervention.is_source_constant]
 
         # save model's trainable parameters as well
         if include_model:
@@ -1289,14 +1284,8 @@ class IntervenableModel(BaseModel):
         saving_config.intervention_types = (
             casted_intervention_types
         )
-        casted_representations = []
-        for (
-            representation_opts
-        ) in saving_config.representations:
-            casted_representations += [
-                RepresentationConfig(*representation_opts)
-            ]
-        saving_config.representations = casted_representations
+        # representations are already normalized by IntervenableConfig
+        # (named records, or legacy 13/14-field positional records)
         intervenable = IntervenableModel(saving_config, model)
 
         # load binary files

@@ -1,0 +1,37 @@
+{
+  "intervention_constant_sources": [
+    false
+  ],
+  "intervention_dimensions": [
+    [
+      0,
+      2
+    ]
+  ],
+  "intervention_types": [
+    "<class 'pyvene.models.interventions.AutoencoderIntervention'>"
+  ],
+  "mode": "parallel",
+  "representations": [
+    [
+      0,
+      "block_output",
+      "pos",
+      1,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      4
+    ]
+  ],
+  "sorted_keys": [
+    "layer_0_comp_block_output_unit_pos_nunit_1#0"
+  ],
+  "transformers_version": "4.57.1"
+}

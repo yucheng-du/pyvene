@@ -374,6 +374,7 @@ Star History
 
    guides/contributing
    guides/causal_abstraction
+   guides/representation_config
    guides/ndif
 
 
