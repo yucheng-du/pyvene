@@ -1805,26 +1805,27 @@ class IntervenableModel(BaseModel):
         for group_id, keys in self._intervention_group.items():
             if sources[group_id] is None:
                 continue  # smart jump for advance usage only
+            if group_id != len(self._intervention_group) - 1:
+                unit_locations_key = f"source_{group_id}->source_{group_id+1}"
+            else:
+                unit_locations_key = f"source_{group_id}->base"
+            # a group can hold several keys: keep every getter of the group,
+            # so that all of them are removed after the source forward.
+            group_get_handlers = HandlerList([])
             for key_id, key in enumerate(keys):
-                if group_id != len(self._intervention_group) - 1:
-                    unit_locations_key = f"source_{group_id}->source_{group_id+1}"
-                else:
-                    unit_locations_key = f"source_{group_id}->base"
                 unit_locations_source = unit_locations[unit_locations_key][0][
                     key_id
                 ]
                 if unit_locations_source is None:
                     continue  # smart jump for advance usage only
 
-                unit_locations_base = unit_locations[unit_locations_key][1][
-                    key_id
-                ]
                 if activations_sources is None:
                     # get activation from source_i
                     get_handlers = self._intervention_getter(
                         [key],
                         [unit_locations_source],
                     )
+                    group_get_handlers.extend(get_handlers)
                 else:
                     self.activations[key] = activations_sources[
                         key
@@ -1833,21 +1834,22 @@ class IntervenableModel(BaseModel):
             if activations_sources is None:
                 # this is when previous setter and THEN the getter get called
                 _ = self.model(**sources[group_id])
-                get_handlers.remove()
+                group_get_handlers.remove()
                 # remove existing setters after getting the curr intervened reprs
                 if len(all_set_handlers) > 0:
                     all_set_handlers.remove()
                     all_set_handlers = HandlerList([])
 
-            for key in keys:
+            for key_id, key in enumerate(keys):
                 # skip in case smart jump
                 if key in self.activations or \
                     isinstance(self.interventions[key], LambdaIntervention) or \
                     self.interventions[key].is_source_constant:
-                    # set with intervened activation to source_i+1
+                    # set with intervened activation to source_i+1,
+                    # using the base locations of this key in the group
                     set_handlers = self._intervention_setter(
                         [key],
-                        [unit_locations_base],
+                        [unit_locations[unit_locations_key][1][key_id]],
                         # assume the order
                         [
                             subspaces[
