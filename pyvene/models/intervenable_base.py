@@ -2279,12 +2279,6 @@ class IntervenableModel(BaseModel):
                 )
 
         return batched_location_dict
-    
-    def train(self, mode=True):
-        self.model.train(mode=mode)
-    
-    def eval(self):
-        self.model.eval()
 
     def train_alignment(
         self,
