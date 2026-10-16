@@ -1373,8 +1373,9 @@ class IntervenableModel(BaseModel):
             intervention = v
             binary_filename = f"intkey_{k}.bin"
             if isinstance(intervention, TrainableIntervention):
+                # load_state_dict copies onto the intervention's own device
                 saved_state_dict = torch.load(
-                    os.path.join(load_directory, binary_filename), map_location='cuda:0')
+                    os.path.join(load_directory, binary_filename), map_location='cpu')
                 intervention.load_state_dict(saved_state_dict)
 
         # load model's trainable parameters as well
