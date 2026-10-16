@@ -159,6 +159,11 @@ def representation_to_record(representation, path="", model_archive=False):
     intervention_type = representation.intervention_type
     intervention = representation.intervention
     source = representation.source_representation
+    if intervention is not None and not isinstance(intervention, torch.nn.Module):
+        raise ValueError(
+            f"{_field_path(path, 'intervention')}: a {type(intervention).__name__} "
+            "is a runtime-only intervention and cannot be stored in a JSON "
+            "configuration")
     if model_archive:
         record["intervention_type"] = None
         record["intervention"] = None
@@ -170,11 +175,6 @@ def representation_to_record(representation, path="", model_archive=False):
                 raise ValueError(
                     f"{_field_path(path, 'intervention')}: only one of the fields "
                     "intervention_type and intervention can be serialized")
-            if not isinstance(intervention, torch.nn.Module):
-                raise ValueError(
-                    f"{_field_path(path, 'intervention')}: a {type(intervention).__name__} "
-                    "is a runtime-only intervention and cannot be stored in a JSON "
-                    "configuration")
             intervention_type = type(intervention)
         if source is not None:
             raise ValueError(

@@ -385,6 +385,38 @@ class RepresentationConfigTestCase(unittest.TestCase):
         for name, value in instance.state_dict().items():
             self.assertTrue(torch.equal(value, before[name]))
 
+    def test_function_model_save_rejects_before_writing(self):
+        model = make_mlp(10)
+        config = IntervenableConfig(representations=[RepresentationConfig(
+            0, "block_output", intervention=lambda b, s: b * 0.5)])
+        intervenable = IntervenableModel(config, model)
+        base, _ = make_inputs(11, 0)
+
+        def assert_forward():
+            with torch.no_grad():
+                _, out = intervenable({"inputs_embeds": base}, unit_locations={"base": 0})
+                torch.testing.assert_close(out[0], model.h[1](model.h[0](base) * 0.5))
+
+        assert_forward()
+        path = r"representations\[0\]\.intervention"
+        with tempfile.TemporaryDirectory() as directory:
+            fresh = os.path.join(directory, "archive")
+            with self.assertRaisesRegex(ValueError, path):
+                intervenable.save(fresh)
+            self.assertFalse(os.path.exists(fresh))
+            existing_files = {"config.json": b"existing config\n",
+                              "intkey_sentinel.bin": b"existing weights\n"}
+            for name, content in existing_files.items():
+                with open(os.path.join(directory, name), "wb") as handle:
+                    handle.write(content)
+            with self.assertRaisesRegex(ValueError, path):
+                intervenable.save(directory)
+            self.assertEqual(sorted(os.listdir(directory)), sorted(existing_files))
+            for name, content in existing_files.items():
+                with open(os.path.join(directory, name), "rb") as handle:
+                    self.assertEqual(handle.read(), content)
+        assert_forward()
+
     def test_repr_with_runtime_values(self):
         representation = RepresentationConfig(
             0, intervention_kwargs={"dtype": torch.float16, "activation": torch.tanh})

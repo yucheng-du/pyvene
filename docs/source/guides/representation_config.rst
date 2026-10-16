@@ -91,6 +91,10 @@ with string keys, plus a ``torch.dtype`` in ``intervention_kwargs["dtype"]``. Tu
 are saved as lists. Saving a configuration that holds any other value raises a
 ``ValueError`` that names the value, for example
 ``representations[0].intervention_kwargs.activation``, before any file is written.
+Runtime-only function interventions are also rejected by configuration saving and
+``IntervenableModel.save()`` with their ``representations[i].intervention`` path,
+before creating an archive or changing existing files. Their runtime forward
+behavior is unchanged.
 
 Source tensors are saved only by ``IntervenableModel.save()``, which stores them in the
 intervention's binary file. A standalone configuration cannot store them.
